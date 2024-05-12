@@ -10,6 +10,6 @@ class Contacts extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'email','mobile_no',
+        'name', 'email','mobile_no','profile_photo'
     ];
 }

@@ -8,13 +8,21 @@ use Livewire\WithFileUploads;
 use App\Export\ContactExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Import\ContactImport;
+use Livewire\WithPagination;
+use Illuminate\Support\Facades\Storage;
+
 class Contact extends Component
 {
-    public $contacts, $name, $email, $contact_id,$mobile_no,$file;
+    public  $name, $email, $contact_id,$mobile_no,$file;
     public $isOpen,$isImport,$isExport = 0;
-    public $sortBy = 'name';
+    public $sort = 'name';
     public $sortDirection = 'asc';
+    public $image;
+    public $croppedImage;
+    public $search;
+    public $profilePhoto;
     use WithFileUploads;
+    use WithPagination;
     /**
      * The attributes that are mass assignable.
      *
@@ -22,18 +30,26 @@ class Contact extends Component
      */
     public function render()
     {
-        $this->contacts = Contacts::orderBy($this->sortBy, $this->sortDirection)->get();
-        return view('livewire.contact');
+
+        $query = Contacts::query();
+
+
+        $contacts = Contacts::orderBy($this->sort, $this->sortDirection)->paginate(3);
+
+
+        return view('livewire.contact',[
+            'contacts'=> $contacts
+        ]);
     }
 
     public function sortBy($field)
     {
-        if ($this->sortBy === $field) {
+        if ($this->sort === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
             $this->sortDirection = 'asc';
         }
-        $this->sortBy = $field;
+        $this->sort = $field;
     }
     /**
      * The attributes that are mass assignable.
@@ -108,12 +124,18 @@ class Contact extends Component
             'mobile_no' => 'required|regex:/^\d{10}$/',
         ]);
 
-        Contacts::updateOrCreate(['id' => $this->contact_id], [
+        $this->emit('croppedImage', $this->profilePhoto);
+
+       $Contacts= Contacts::updateOrCreate(['id' => $this->contact_id], [
             'name' => $this->name,
             'email' => $this->email,
-            'mobile_no'=>$this->mobile_no
+            'mobile_no'=>$this->mobile_no,
+            //'image' => $this->croppedImage,
         ]);
-
+        if ($this->profilePhoto) {
+            $path = $this->profilePhoto->storePublicly('profile_photos', 'public');
+            $Contacts->profile_photo = Storage::disk('public')->url($path);     }
+        $Contacts->save();
         session()->flash('message',
             $this->contact_id ? 'contact Updated Successfully.' : 'contact Created Successfully.');
 

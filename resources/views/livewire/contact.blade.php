@@ -29,13 +29,27 @@
         @if($isExport)
         @include('livewire.Export')
     @endif
+    <div class="flex justify-end mb-4">
+        <input wire:model.debounce.300ms="search" type="text" placeholder="Search..." class="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:border-blue-500">
+    </div>
+
             <table class="table-fixed w-full">
                 <thead>
                     <tr class="bg-gray-100">
-                    <th class="px-4 py-2 w-20" wire:click="sortBy('id')">No.</th>
-                    <th class="px-4 py-2" wire:click="sortBy('name')">Name</th>
-                    <th class="px-4 py-2" wire:click="sortBy('email')">Email</th>
-                    <th class="px-4 py-2" wire:click="sortBy('mobile_no')">Mobile No</th>
+                        <th class="px-4 py-2" wire:click="sortBy('id')">
+                            No. @if($sort === 'id') <span>@if($sortDirection === 'asc') &#9650; @else &#9660; @endif</span> @endif
+                        </th>
+                        <th class="px-4 py-2">Profile Photo</th>
+                        <th class="px-4 py-2" wire:click="sortBy('name')">
+                            Name @if($sort === 'name') <span>@if($sortDirection === 'asc') &#9650; @else &#9660; @endif</span> @endif
+                        </th>
+                        <th class="px-4 py-2" wire:click="sortBy('email')">
+                            Email @if($sort === 'email') <span>@if($sortDirection === 'asc') &#9650; @else &#9660; @endif</span> @endif
+                        </th>
+                        <th class="px-4 py-2" wire:click="sortBy('mobile_no')">
+                            Mobile No @if($sort === 'mobile_no') <span>@if($sortDirection === 'asc') &#9650; @else &#9660; @endif</span> @endif
+                        </th>
+
                     <th class="px-4 py-2">Action</th>
                 </tr>
                 </thead>
@@ -43,6 +57,8 @@
                     @foreach($contacts as $index => $contact)
             <tr>
                 <td class="border px-4 py-2">{{ $index + 1 }}</td>
+                <td class="border px-4 py-2"><img src="{{ $contact->profilePhoto }}" alt="Uploaded Image">
+
                 <td class="border px-4 py-2">{{ $contact->name }}</td>
                 <td class="border px-4 py-2">{{ $contact->email }}</td>
                 <td class="border px-4 py-2">{{ $contact->mobile_no }}</td>
@@ -54,6 +70,7 @@
         @endforeach
                 </tbody>
             </table>
+            {{ $contacts->links() }}
         </div>
     </div>
 </div>
