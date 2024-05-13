@@ -16,10 +16,8 @@
                 </div>
             @endif
             <button wire:click="create()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-3">Create New contact</button>
-
             <button wire:click="import()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-3">import contact</button>
             <button wire:click="export()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-3">export contact</button>
-
             @if($isOpen)
                 @include('livewire.create')
             @endif
@@ -30,46 +28,48 @@
         @include('livewire.Export')
     @endif
     <div class="flex justify-end mb-4">
-        <input wire:model.debounce.300ms="search" type="text" placeholder="Search..." class="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:border-blue-500">
+        <input wire:model="search" wire:change="triggerSearch" type="text" placeholder="Search..." class="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:border-blue-500">
     </div>
-
-            <table class="table-fixed w-full">
-                <thead>
-                    <tr class="bg-gray-100">
-                        <th class="px-4 py-2" wire:click="sortBy('id')">
-                            No. @if($sort === 'id') <span>@if($sortDirection === 'asc') &#9650; @else &#9660; @endif</span> @endif
-                        </th>
-                        <th class="px-4 py-2">Profile Photo</th>
-                        <th class="px-4 py-2" wire:click="sortBy('name')">
-                            Name @if($sort === 'name') <span>@if($sortDirection === 'asc') &#9650; @else &#9660; @endif</span> @endif
-                        </th>
-                        <th class="px-4 py-2" wire:click="sortBy('email')">
-                            Email @if($sort === 'email') <span>@if($sortDirection === 'asc') &#9650; @else &#9660; @endif</span> @endif
-                        </th>
-                        <th class="px-4 py-2" wire:click="sortBy('mobile_no')">
-                            Mobile No @if($sort === 'mobile_no') <span>@if($sortDirection === 'asc') &#9650; @else &#9660; @endif</span> @endif
-                        </th>
-
+    <div class="overflow-x-auto">
+        <table class="table-auto min-w-full divide-y divide-gray-200">
+            <!-- Table headers -->
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2" wire:click="sortBy('id')">
+                        No. @if($sort === 'id') <span>@if($sortDirection === 'asc') &#9650; @else &#9660; @endif</span> @endif
+                    </th>
+                    <th class="px-4 py-2">Profile Photo</th>
+                    <th class="px-4 py-2" wire:click="sortBy('name')">
+                        Name @if($sort === 'name') <span>@if($sortDirection === 'asc') &#9650; @else &#9660; @endif</span> @endif
+                    </th>
+                    <th class="px-4 py-2" wire:click="sortBy('email')">
+                        Email @if($sort === 'email') <span>@if($sortDirection === 'asc') &#9650; @else &#9660; @endif</span> @endif
+                    </th>
+                    <th class="px-4 py-2" wire:click="sortBy('mobile_no')">
+                        Mobile No @if($sort === 'mobile_no') <span>@if($sortDirection === 'asc') &#9650; @else &#9660; @endif</span> @endif
+                    </th>
                     <th class="px-4 py-2">Action</th>
                 </tr>
-                </thead>
-                <tbody>
-                    @foreach($contacts as $index => $contact)
-            <tr>
-                <td class="border px-4 py-2">{{ $index + 1 }}</td>
-                <td class="border px-4 py-2"><img src="{{ $contact->profilePhoto }}" alt="Uploaded Image">
+            </thead>
+            <!-- Table body -->
+            <tbody>
+                @foreach($contacts as $index => $contact)
+                <tr>
+                    <td class="border px-4 py-2">{{ $index + 1 }}</td>
+                    <td class="border px-4 py-2"><img src="{{ $contact->profilePhoto }}" alt="Uploaded Image"></td>
+                    <td class="border px-4 py-2">{{ $contact->name }}</td>
+                    <td class="border px-4 py-2">{{ $contact->email }}</td>
+                    <td class="border px-4 py-2">{{ $contact->mobile_no }}</td>
+                    <td class="border px-4 py-2">
+                        <button wire:click="edit({{ $contact->id }})" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Edit</button>
+                        <button wire:click="delete({{ $contact->id }})" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Delete</button>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 
-                <td class="border px-4 py-2">{{ $contact->name }}</td>
-                <td class="border px-4 py-2">{{ $contact->email }}</td>
-                <td class="border px-4 py-2">{{ $contact->mobile_no }}</td>
-                <td class="border px-4 py-2">
-                    <button wire:click="edit({{ $contact->id }})" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Edit</button>
-                    <button wire:click="delete({{ $contact->id }})" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Delete</button>
-                </td>
-            </tr>
-        @endforeach
-                </tbody>
-            </table>
             {{ $contacts->links() }}
         </div>
     </div>

@@ -32,16 +32,24 @@ class Contact extends Component
     {
 
         $query = Contacts::query();
+        if ($this->search) {
+            $query=new Contacts();
+            $query->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('email', 'like', '%' . $this->search . '%')
+                  ->orWhere('mobile_no', 'like', '%' . $this->search . '%');
+        }
 
-
-        $contacts = Contacts::orderBy($this->sort, $this->sortDirection)->paginate(3);
-
-
-        return view('livewire.contact',[
-            'contacts'=> $contacts
+        $query->orderBy($this->sort, $this->sortDirection);
+        $contacts = $query->paginate(3);
+        return view('livewire.contact', [
+            'contacts' => $contacts
         ]);
     }
 
+    public function triggerSearch()
+    {
+        $this->render(); // Manually trigger Livewire render method
+    }
     public function sortBy($field)
     {
         if ($this->sort === $field) {
@@ -67,7 +75,7 @@ class Contact extends Component
    public function export(){
     $contact = Contacts::all();
     $this->isImport = false;
-    $download = Excel::download(new ContactExport($contact), 'contact.xlsx');
+    $download = Excel::download(new ContactExport(), 'contact.xlsx');
     return $download;
    }
 
@@ -76,8 +84,12 @@ class Contact extends Component
     $this->isImport = false;
    }
    public function fileImport(){
-        Excel::import(new ContactImport, $this->file);
-   }
+    $this->validate([
+        'file' => 'required|file|mimes:xlsx,xls|max:10240',
+    ]);
+    Excel::import(new ContactImport, $this->file);
+}
+
     /**
      * The attributes that are mass assignable.
      *
@@ -108,6 +120,7 @@ class Contact extends Component
         $this->email = '';
         $this->contact_id = '';
         $this->mobile_no = '';
+        $this->profilePhoto='';
 
     }
 
@@ -122,15 +135,14 @@ class Contact extends Component
             'name' => 'required',
             'email' => 'required|email', // Adding email validation rule
             'mobile_no' => 'required|regex:/^\d{10}$/',
+            'profilePhoto' => 'required|image|max:1024',
         ]);
 
-        $this->emit('croppedImage', $this->profilePhoto);
 
        $Contacts= Contacts::updateOrCreate(['id' => $this->contact_id], [
             'name' => $this->name,
             'email' => $this->email,
             'mobile_no'=>$this->mobile_no,
-            //'image' => $this->croppedImage,
         ]);
         if ($this->profilePhoto) {
             $path = $this->profilePhoto->storePublicly('profile_photos', 'public');
